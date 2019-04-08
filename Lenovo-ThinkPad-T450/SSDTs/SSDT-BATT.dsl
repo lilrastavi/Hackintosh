@@ -2,12 +2,14 @@
 // Loosely based on https://github.com/shmilee/T450-Hackintosh/blob/master/DSDT/patch-files/4_battery_Lenovo-T450.txt.
 // John Davis - Goldfish64
 
+#ifndef NO_DEFINITIONBLOCK
 DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
 {
+#endif
     // External references for system devices and EC fields.
     External(_SB.PCI0, DeviceObj)
-    External(_SB.PCI0.LPCB, DeviceObj)
-    External(_SB.PCI0.LPCB.EC, DeviceObj)
+    External(_SB.PCI0.LPC, DeviceObj)
+    External(_SB.PCI0.LPC.EC, DeviceObj)
 
     //
     // Utility methods.
@@ -31,12 +33,13 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
     }
 
     // Embedded controller.
-    Scope(\_SB.PCI0.LPCB.EC)
+    Scope(\_SB.PCI0.LPC.EC)
     {    
+        External (TMP0, FieldUnitObj)
         //
         // Utility methods for reading 128-bit EC fields.
         //
-        Method(RE1B, 1, NotSerialized)
+        Method(RE1B, 1, Serialized)
         {
             OperationRegion(ERAM, EmbeddedControl, Arg0, 1)
             Field(ERAM, ByteAcc, NoLock, Preserve) { BYTE, 8 }
@@ -67,6 +70,8 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
         {
             Offset(0x36),
             WAC0, 8, WAC1, 8,
+            Offset (0x84),
+            HFN1, 8, HFN2, 8,
         }
 
         Field(ECO2, ByteAcc, NoLock, Preserve)
@@ -433,5 +438,23 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
                 Return(Local0)
             }
         }
+
+        // This only works with FakeSMC's ACPISensors, not VirtualSMC, but I'll include it here for completeness' sake.
+        /*Device (SMCD)
+        {
+            Name (_HID, "MON0000")  // _HID: Hardware ID
+            Method (FAN0, 0, NotSerialized)
+            {
+                Store (B1B2 (\_SB.PCI0.LPC.EC.HFN1, \_SB.PCI0.LPC.EC.HFN2), Local0)
+                Return (Local0)
+            }
+            Method (TCPU, 0, NotSerialized)
+            {
+                Store (\_SB.PCI0.LPC.EC.TMP0, Local0)
+                Return (Local0)
+            }
+        }*/
     }
+#ifndef NO_DEFINITIONBLOCK
 }
+#endif
