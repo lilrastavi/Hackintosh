@@ -36,6 +36,8 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
     Scope(\_SB.PCI0.LPC.EC)
     {    
         External (TMP0, FieldUnitObj)
+        External (HFSP, FieldUnitObj)
+
         //
         // Utility methods for reading 128-bit EC fields.
         //
@@ -447,7 +449,6 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
             {
                 "System Fan", "FAN0"
             })
-
             Name (TEMP, Package()
             {
                 "CPU Heatsink", "TCPU"
@@ -464,6 +465,42 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
                 Store (\_SB.PCI0.LPC.EC.TMP0, Local0)
                 Return (Local0)
             }
+
+            /* Method (FCPU, 0, Serialized)
+            {
+                Store (\_SB.PCI0.LPC.EC.TMP0, Local0)
+
+                If (LLessEqual (Local0, 0x32)) // CPU Temp is <= 50C
+                {
+                    Store (Zero, \_SB.PCI0.LPC.EC.HFSP) // Set FAN Off
+                }
+                If (LGreaterEqual (Local0, 0x4F)) // CPU Temp is >= 79C
+                {
+                    Store (0x40, \_SB.PCI0.LPC.EC.HFSP) // Set Fan Speed to ABSOLUTE MAXIMUM
+                }
+                ElseIf (LGreaterEqual (Local0, 0x4B)) // CPU Temp is >= 75C
+                {
+                    Store (0x07, \_SB.PCI0.LPC.EC.HFSP) // Set Fan Speed to Maximum
+                }
+                ElseIf (LGreaterEqual (Local0, 0x46)) // CPU Temp is >= 70C
+                {
+                    Store (0x04, \_SB.PCI0.LPC.EC.HFSP) //Set Fan Speed to Medium
+                }
+                ElseIf (LGreaterEqual (Local0, 0x43)) // CPU Temp is >= 67C
+                {
+                    Store (0x03, \_SB.PCI0.LPC.EC.HFSP) // Set Fan Mode 3
+                }
+                ElseIf (LGreaterEqual (Local0, 0x3F)) // CPU Temp is >= 63C
+                {
+                    Store (0x02, \_SB.PCI0.LPC.EC.HFSP) // Set Fan Mode 2
+                }
+                ElseIf (LGreaterEqual (Local0, 0x37)) // // CPU Temp is >= 55C
+                {
+                    Store (One, \_SB.PCI0.LPC.EC.HFSP) // Set Fan Mode 1 - Lowest speed
+                }
+
+                Return (1)
+            } */
         }
     }
 #ifndef NO_DEFINITIONBLOCK
