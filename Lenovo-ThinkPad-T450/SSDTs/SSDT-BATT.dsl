@@ -440,20 +440,31 @@ DefinitionBlock("", "SSDT", 2, "hack", "BATT", 0)
         }
 
         // This only works with FakeSMC's ACPISensors, not VirtualSMC, but I'll include it here for completeness' sake.
-        /*Device (SMCD)
+        Device (SMCD)
         {
-            Name (_HID, "MON0000")  // _HID: Hardware ID
+            Name (_HID, "FAN00000")
+            Name (TACH, Package()
+            {
+                "System Fan", "FAN0"
+            })
+
+            Name (TEMP, Package()
+            {
+                "CPU Heatsink", "TCPU"
+            })
+
             Method (FAN0, 0, NotSerialized)
             {
                 Store (B1B2 (\_SB.PCI0.LPC.EC.HFN1, \_SB.PCI0.LPC.EC.HFN2), Local0)
                 Return (Local0)
             }
+
             Method (TCPU, 0, NotSerialized)
             {
                 Store (\_SB.PCI0.LPC.EC.TMP0, Local0)
                 Return (Local0)
             }
-        }*/
+        }
     }
 #ifndef NO_DEFINITIONBLOCK
 }
